@@ -7,29 +7,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+/* ===== สีหลักของ Dashboard อยู่ใน :root: แก้ครั้งเดียวมีผลทั้งเว็บ ===== */
 :root {
-  --navy:   #1B3A6B;
-  --blue:   #2D6BC4;
-  --teal:   #0B7A63;
-  --teal-l: #E1F5EE;
-  --amber:  #D97706;
-  --red:    #DC2626;
-  --purple: #5B21B6;
-  --bg:     #F0F4F9;
+  /* Pastel dashboard palette — ชมพู ฟ้า เขียวมิ้นต์ ตามภาพตัวอย่าง */
+  --pink-soft: #FFD6E8;
+  --sky-soft:  #B9E8FF;
+  --sky:       #5ECDF2;
+  --mint:      #6EE7C8;
+
+  --header-gradient: linear-gradient(135deg, #FFD6E8 0%, #B9E8FF 45%, #6EE7C8 100%);
+  --page-gradient:   linear-gradient(180deg, #F8FBFF 0%, #EEF9F7 100%);
+  --table-gradient:  linear-gradient(90deg, #F05A9D, #4D96FF, #35C99A);
+
+  --navy:   #163A6B;
+  --blue:   #4D9DFF;
+  --blue-2: #2F5E9E;
+  --teal:   #35C99A;
+  --teal-l: #D7F5EC;
+  --amber:  #FFC857;
+  --red:    #F05A9D;
+  --refer:  #EC407A;
+  --purple: #8E7CFF;
+  --bg:     #F8FBFF;
   --surface:#FFFFFF;
-  --border: #D1DCE8;
-  --text:   #1A2332;
-  --muted:  #64748B;
+  --border: #DDEAF5;
+  --grid:   #DCEAF7;
+  --text:   #163A6B;
+  --muted:  #6B7A90;
+  --shadow: rgba(216, 230, 243, 0.85);
+  --total-row: #D7F5EC;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+body { font-family: 'Sarabun', sans-serif; background: var(--page-gradient); color: var(--text); font-size: 15px; line-height: 1.6; }
 
 .header {
-  background: linear-gradient(135deg, #1B3A6B 0%, #2D6BC4 100%);
-  padding: 16px 32px;
+  background: var(--header-gradient);
+  padding: 18px 32px 24px;
   display: flex; align-items: center; gap: 20px;
-  border-bottom: 3px solid var(--blue);
+  border-bottom: 1px solid rgba(255,255,255,0.65);
+  box-shadow: 0 10px 32px var(--shadow);
+  position: relative; overflow: hidden;
 }
+
+.header::before, .header::after {
+  content: ''; position: absolute; border-radius: 999px; pointer-events: none;
+  background: rgba(255,255,255,0.32); filter: blur(0.2px);
+}
+.header::before { width: 280px; height: 280px; right: 110px; top: -170px; }
+.header::after  { width: 220px; height: 220px; right: -70px; bottom: -120px; }
+.header > * { position: relative; z-index: 1; }
 .header-logo-wrap {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -37,42 +63,46 @@ body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--t
 .header-logo {
   width: 88px; height: 88px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  filter: drop-shadow(0 6px 14px rgba(22,58,107,0.18));
 }
 .header-left { flex: 1; min-width: 0; }
-.header-left h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 0.3px; line-height: 1.3; }
-.header-left p  { font-size: 13px; color: #B8CDE8; margin-top: 4px; }
+.header-left h1 { font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: 0.3px; line-height: 1.3; text-shadow: 0 1px 0 rgba(255,255,255,0.55); }
+.header-left p  { font-size: 13px; color: var(--blue-2); margin-top: 4px; font-weight: 500; }
 .header-badge {
-  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 20px; padding: 6px 16px; font-size: 13px; color: #CBD5E1; font-weight: 500;
+  background: rgba(255,255,255,0.48); border: 1px solid rgba(255,255,255,0.72);
+  border-radius: 999px; padding: 6px 16px; font-size: 13px; color: var(--navy); font-weight: 600;
+  box-shadow: 0 6px 16px rgba(216,230,243,0.72);
 }
 .filter-bar {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 12px 32px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  background: rgba(255,255,255,0.78); border-bottom: 1px solid var(--border);
+  padding: 14px 32px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  backdrop-filter: blur(10px);
 }
 .filter-bar label { font-size: 13px; color: var(--muted); font-weight: 500; }
 .filter-bar select {
-  font-family: 'Sarabun', sans-serif; font-size: 13px; padding: 6px 12px;
-  border: 1px solid var(--border); border-radius: 6px;
+  font-family: 'Sarabun', sans-serif; font-size: 13px; padding: 8px 16px;
+  border: 1px solid var(--border); border-radius: 999px;
   background: #fff; color: var(--text); cursor: pointer; outline: none;
+  box-shadow: 0 5px 16px rgba(216,230,243,0.55);
 }
-.filter-bar select:focus { border-color: var(--blue); }
+.filter-bar select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(185,232,255,0.45); }
 .main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
 
 /* KPI */
 .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
 .kpi {
-  background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.92); border-radius: 16px; border: 1px solid var(--border);
   padding: 18px 20px; position: relative; overflow: hidden;
-  transition: box-shadow .2s;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 10px 28px var(--shadow);
 }
-.kpi:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.kpi:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(216,230,243,0.95); }
 .kpi::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: var(--accent, var(--blue));
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg, var(--accent, var(--blue)), rgba(255,255,255,0.25));
 }
-.kpi-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
-.kpi-value { font-size: 34px; font-weight: 700; color: var(--text); line-height: 1.1; margin: 6px 0 2px; }
+.kpi-label { font-size: 11px; color: var(--accent, var(--muted)); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
+.kpi-value { font-size: 34px; font-weight: 700; color: var(--accent, var(--text)); line-height: 1.1; margin: 6px 0 2px; }
 .kpi-sub   { font-size: 12px; color: var(--muted); }
 .kpi-pct   { font-size: 14px; font-weight: 600; }
 
@@ -108,8 +138,9 @@ body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--t
   overflow-y: auto;
 }
 .card {
-  background: var(--surface); border-radius: 12px;
+  background: rgba(255,255,255,0.94); border-radius: 16px;
   border: 1px solid var(--border); padding: 20px;
+  box-shadow: 0 10px 30px var(--shadow);
 }
 .card-title {
   font-size: 14px; font-weight: 600; color: var(--navy);
@@ -129,7 +160,7 @@ canvas { width: 100% !important; }
 }
 .loading-spinner {
   width: 48px; height: 48px;
-  border: 4px solid #E5EBF4;
+  border: 4px solid #D8E6F3;
   border-top-color: var(--blue);
   border-radius: 50%;
   margin: 0 auto;
@@ -147,20 +178,20 @@ canvas { width: 100% !important; }
 .table-wrap { overflow-x: auto; max-height: 420px; overflow-y: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th {
-  background: var(--navy); color: #fff;
-  padding: 10px 12px; text-align: center; font-weight: 600;
+  background: var(--table-gradient); color: #fff;
+  padding: 10px 12px; text-align: center; font-weight: 700;
   font-size: 12px; white-space: nowrap;
   position: sticky; top: 0; z-index: 1;
 }
 thead th:first-child { text-align: left; }
-tbody tr:nth-child(even) { background: #F8FAFD; }
-tbody tr:hover { background: #EEF4FF; }
-tbody tr.total-row { background: var(--navy) !important; }
-tbody tr.total-row td { color: #fff !important; font-weight: 700; }
-tbody td { padding: 9px 12px; border-bottom: 1px solid #EDF2F7; text-align: center; color: var(--text); }
+tbody tr:nth-child(even) { background: #F5FAFF; }
+tbody tr:hover { background: #EEF9F7; }
+tbody tr.total-row { background: var(--total-row) !important; }
+tbody tr.total-row td { color: var(--navy) !important; font-weight: 700; }
+tbody td { padding: 9px 12px; border-bottom: 1px solid var(--grid); text-align: center; color: var(--text); }
 tbody td:first-child { text-align: left; font-weight: 500; }
 .pct-cell { color: var(--blue); font-weight: 600; }
-.warn-cell { color: var(--red); font-weight: 600; }
+.warn-cell { color: var(--refer); font-weight: 700; }
 
 /* Refer tabs */
 .refer-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -170,15 +201,15 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   background: #fff; color: var(--muted); transition: all .15s; font-weight: 500;
 }
 .tab-btn.active { color: #fff; border-color: transparent; }
-.tab-btn[data-type="all"].active   { background: var(--navy); }
-.tab-btn[data-type="DR"].active    { background: var(--red); }
-.tab-btn[data-type="ถ่ายซ้ำ"].active { background: var(--amber); }
+.tab-btn[data-type="all"].active   { background: linear-gradient(90deg, var(--red), var(--blue)); }
+.tab-btn[data-type="DR"].active    { background: var(--refer); }
+.tab-btn[data-type="ถ่ายซ้ำ"].active { background: var(--pink-soft); color: var(--refer); border-color: #F8BBD0; }
 .tab-btn[data-type="อื่นๆ"].active  { background: var(--purple); }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-.badge-DR    { background: #FEE2E2; color: #991B1B; }
-.badge-photo { background: #FEF3C7; color: #92400E; }
-.badge-other { background: #EDE9FE; color: #4C1D95; }
+.badge-DR    { background: #FFE3F0; color: var(--refer); }
+.badge-photo { background: #F8BBD0; color: #B62266; }
+.badge-other { background: #F0ECFF; color: #6F62E8; }
 
 /* Legend */
 .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; justify-content: center; }
@@ -191,23 +222,23 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .prog-label { display: flex; justify-content: space-between; font-size: 12px; }
 .prog-label span:first-child { color: var(--text); font-weight: 500; }
 .prog-label span:last-child  { color: var(--muted); }
-.prog-bar { height: 8px; background: #E5EBF4; border-radius: 4px; overflow: hidden; }
+.prog-bar { height: 8px; background: #D8E6F3; border-radius: 4px; overflow: hidden; }
 .prog-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
 .pending-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
 /* Refer stat cards */
 .refer-stat-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
 .refer-stat { border-radius: 10px; padding: 14px 16px; border: 1px solid var(--border); }
-.refer-stat.dr    { background: #FEF2F2; border-color: #FECACA; }
-.refer-stat.photo { background: #FFFBEB; border-color: #FDE68A; }
-.refer-stat.other { background: #F5F3FF; border-color: #DDD6FE; }
+.refer-stat.dr    { background: linear-gradient(135deg, #FFF0F7, #FFD6E8); border-color: #F8BBD0; }
+.refer-stat.photo { background: linear-gradient(135deg, #FFF0F7, #F8BBD0); border-color: #F8BBD0; }
+.refer-stat.other { background: linear-gradient(135deg, #EEF9F7, #D7F5EC); border-color: #B8F0E0; }
 .refer-stat .rs-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.refer-stat.dr    .rs-label { color: var(--red); }
-.refer-stat.photo .rs-label { color: var(--amber); }
+.refer-stat.dr    .rs-label { color: var(--refer); }
+.refer-stat.photo .rs-label { color: var(--refer); }
 .refer-stat.other .rs-label { color: var(--purple); }
 .refer-stat .rs-val { font-size: 30px; font-weight: 700; margin: 2px 0; }
-.refer-stat.dr    .rs-val { color: var(--red); }
-.refer-stat.photo .rs-val { color: var(--amber); }
+.refer-stat.dr    .rs-val { color: var(--refer); }
+.refer-stat.photo .rs-val { color: var(--refer); }
 .refer-stat.other .rs-val { color: var(--purple); }
 .refer-stat .rs-sub { font-size: 11px; color: var(--muted); }
 
@@ -226,10 +257,10 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   display: inline-block; padding: 2px 8px; border-radius: 10px;
   font-size: 10px; font-weight: 600; margin-left: 6px;
 }
-.chip-good   { background: #D1FAE5; color: #065F46; }
-.chip-mid    { background: #DBEAFE; color: #1E40AF; }
-.chip-low    { background: #FEE2E2; color: #991B1B; }
-.chip-none   { background: #F1F5F9; color: #94A3B8; }
+.chip-good   { background: #D7F5EC; color: #0E7F62; }
+.chip-mid    { background: #E8F5FF; color: var(--blue-2); }
+.chip-low    { background: #FFE3F0; color: var(--refer); }
+.chip-none   { background: #F5FAFF; color: var(--muted); }
 
 /* Mobile: keep desktop layout — บนมือถือจะ scroll ได้ + pinch zoom ดูเหมือน PC */
 body { min-width: 1280px; overflow-x: auto; }
@@ -264,27 +295,27 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- KPI -->
   <div class="kpi-row">
-    <div class="kpi" style="--accent:#1B3A6B">
+    <div class="kpi" style="--accent:#35C99A">
       <div class="kpi-label">เป้าหมาย</div>
       <div class="kpi-value" id="kpiTarget">—</div>
       <div class="kpi-sub" id="kpiTargetSub">ราย</div>
     </div>
-    <div class="kpi" style="--accent:#2D6BC4">
+    <div class="kpi" style="--accent:#4D9DFF">
       <div class="kpi-label">ตรวจได้แล้ว</div>
       <div class="kpi-value" id="kpiDone">—</div>
       <div class="kpi-sub kpi-pct" id="kpiCovPct" style="color:var(--blue)">—</div>
     </div>
-    <div class="kpi" style="--accent:#0B7A63">
+    <div class="kpi" style="--accent:#35C99A">
       <div class="kpi-label">ไม่พบ DR (No DR)</div>
       <div class="kpi-value" id="kpiNoDR">—</div>
       <div class="kpi-sub" id="kpiNoDRPct">—</div>
     </div>
-    <div class="kpi" style="--accent:#DC2626">
+    <div class="kpi" style="--accent:#F05A9D">
       <div class="kpi-label">พบ DR</div>
       <div class="kpi-value" id="kpiDR">—</div>
       <div class="kpi-sub kpi-pct" id="kpiDRPct" style="color:var(--red)">—</div>
     </div>
-    <div class="kpi" style="--accent:#D97706">
+    <div class="kpi" style="--accent:#EC407A">
       <div class="kpi-label">Refer รวมทั้งหมด</div>
       <div class="kpi-value" id="kpiRefer">—</div>
       <div class="kpi-sub" id="kpiReferSub">—</div>
@@ -293,7 +324,7 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- Row 1: Bar Chart แนวตั้ง — ความครอบคลุมรายอำเภอ -->
   <div class="card prog-card-full" style="margin-bottom:20px">
-    <div class="card-title"><span class="dot" style="--dot-c:#2D6BC4"></span><span id="progCardTitle">ความครอบคลุมรายอำเภอ (% ของเป้าหมาย)</span></div>
+    <div class="card-title"><span class="dot" style="--dot-c:#4D96FF"></span><span id="progCardTitle">ความครอบคลุมรายอำเภอ (% ของเป้าหมาย)</span></div>
     <div class="coverage-chart-wrap">
       <canvas id="coverageChart"></canvas>
     </div>
@@ -303,14 +334,14 @@ body { min-width: 1280px; overflow-x: auto; }
   <!-- Row 2: 2 pie charts เรียงข้างกัน -->
   <div class="pies-row">
     <div class="card">
-      <div class="card-title"><span class="dot" style="--dot-c:#0B7A63"></span>ผลการตรวจจอประสาทตา</div>
+      <div class="card-title"><span class="dot" style="--dot-c:#35C99A"></span>ผลการตรวจจอประสาทตา</div>
       <div class="pie-inner">
         <canvas id="drPieChart" height="160"></canvas>
         <div class="legend" id="drLegend"></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="dot" style="--dot-c:#5B21B6"></span>ผลตรวจอื่นๆ</div>
+      <div class="card-title"><span class="dot" style="--dot-c:#8F83F3"></span>ผลตรวจอื่นๆ</div>
       <div class="pie-inner">
         <canvas id="otherPieChart" height="160"></canvas>
         <div class="legend" id="otherLegend"></div>
@@ -320,7 +351,7 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- Summary table -->
   <div class="card" style="margin-bottom:20px">
-    <div class="card-title"><span class="dot" style="--dot-c:#1B3A6B"></span>สรุปผลตรวจรายอำเภอ</div>
+    <div class="card-title"><span class="dot" style="--dot-c:#4D96FF"></span>สรุปผลตรวจรายอำเภอ</div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -377,7 +408,7 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- Detail table -->
   <div class="card" style="margin-bottom:20px">
-    <div class="card-title"><span class="dot" style="--dot-c:#0B7A63"></span>รายละเอียดรายหน่วยบริการ (เฉพาะที่มีข้อมูล)</div>
+    <div class="card-title"><span class="dot" style="--dot-c:#35C99A"></span>รายละเอียดรายหน่วยบริการ (เฉพาะที่มีข้อมูล)</div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -521,11 +552,11 @@ async function loadData() {
     console.error('โหลดข้อมูลล้มเหลว:', err);
     if (loadingEl) {
       loadingEl.innerHTML = `
-        <div style="text-align:center;color:#DC2626;padding:40px">
+        <div style="text-align:center;color:#EC407A;padding:40px">
           <div style="font-size:48px;margin-bottom:12px">⚠️</div>
           <div style="font-size:16px;font-weight:600;margin-bottom:8px">โหลดข้อมูลไม่สำเร็จ</div>
-          <div style="font-size:13px;color:#64748B;margin-bottom:16px">${err.message}</div>
-          <button onclick="location.reload()" style="padding:8px 20px;background:#2D6BC4;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Sarabun">ลองใหม่</button>
+          <div style="font-size:13px;color:#6B7A90;margin-bottom:16px">${err.message}</div>
+          <button onclick="location.reload()" style="padding:8px 20px;background:#4D96FF;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Sarabun">ลองใหม่</button>
         </div>`;
     }
   }
@@ -554,9 +585,9 @@ function buildProgress(data, distFilter) {
     doneVals   = hcRows.map(r => r.done);
     targetVals = hcRows.map(r => r.target);
     colors     = hcRows.map(r => {
-      if (r.target === 0) return '#E5EBF4'; // อ่อน — ไม่มีข้อมูล
+      if (r.target === 0) return '#F8BBD0'; // ชมพูอ่อน — ไม่มีข้อมูล
       const p = (r.done / r.target) * 100;
-      return p >= 70 ? '#0B7A63' : p >= 50 ? '#2D6BC4' : '#D97706';
+      return p >= 70 ? '#43D3AE' : p >= 50 ? '#4D96FF' : '#FFC857';
     });
     pending = [];
   } else {
@@ -566,9 +597,9 @@ function buildProgress(data, distFilter) {
     doneVals   = data.map(d => d.done);
     targetVals = data.map(d => d.target);
     colors     = data.map(d => {
-      if (d.target === 0) return '#E5EBF4'; // อ่อน — ยังไม่มีข้อมูล
+      if (d.target === 0) return '#F8BBD0'; // ชมพูอ่อน — ยังไม่มีข้อมูล
       const p = d.pct * 100;
-      return p >= 70 ? '#0B7A63' : p >= 50 ? '#2D6BC4' : '#D97706';
+      return p >= 70 ? '#43D3AE' : p >= 50 ? '#4D96FF' : '#FFC857';
     });
     pending = data.filter(d => d.target === 0).map(d => d.name);
   }
@@ -614,7 +645,7 @@ function buildProgress(data, distFilter) {
             callback: function(v) { return v + '%'; },
             font: { family: 'Sarabun', size: 11 }
           },
-          grid: { color: '#EDF2F7' }
+          grid: { color: '#DCEAF7' }
         },
         x: {
           ticks: { 
@@ -647,7 +678,7 @@ function buildDRPie(data) {
   data.forEach(d => { noDR+=d.noDR; m+=d.mild; mo+=d.mod; sv+=d.sev; pd+=d.pdr; });
   const labels = ['No DR','Mild NPDR','Moderate NPDR','Severe NPDR','PDR'];
   const vals   = [noDR, m, mo, sv, pd];
-  const colors = ['#34D399','#60A5FA','#FBBF24','#F97316','#EF4444'];
+  const colors = ['#35C99A','#4D9DFF','#FFC857','#FF6FAE','#8E7CFF'];
   if (drChart) drChart.destroy();
   drChart = new Chart(document.getElementById('drPieChart'), {
     type: 'doughnut',
@@ -665,7 +696,7 @@ function buildOtherPie(data) {
   data.forEach(d => { cat+=d.cataract; pte+=d.pterygium; glau+=d.glaucoma; oth+=d.other; });
   const labels = ['ต้อกระจก','ต้อเนื้อ','ต้อหิน','อื่นๆ'];
   const vals   = [cat, pte, glau, oth];
-  const colors = ['#A78BFA','#34D399','#FB923C','#60A5FA'];
+  const colors = ['#8F83F3','#35C99A','#FF6FAE','#4D96FF'];
   if (otherChart) otherChart.destroy();
   otherChart = new Chart(document.getElementById('otherPieChart'), {
     type: 'doughnut',

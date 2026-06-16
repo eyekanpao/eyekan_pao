@@ -17,17 +17,18 @@
 
   --header-gradient: linear-gradient(135deg, #FFD6E8 0%, #B9E8FF 45%, #6EE7C8 100%);
   --page-gradient:   linear-gradient(180deg, #F8FBFF 0%, #EEF9F7 100%);
-  --table-gradient:  linear-gradient(90deg, #F05A9D, #4D96FF, #35C99A);
+  --table-gradient:  linear-gradient(90deg, #38C8A8 0%, #43D3AE 100%);
+  --table-gradient-pink: linear-gradient(90deg, #F05A9D 0%, #E85088 100%);
 
   --navy:   #163A6B;
-  --blue:   #4D9DFF;
+  --blue:   #4D96FF;
   --blue-2: #2F5E9E;
-  --teal:   #35C99A;
+  --teal:   #43D3AE;
   --teal-l: #D7F5EC;
   --amber:  #FFC857;
   --red:    #F05A9D;
-  --refer:  #EC407A;
-  --purple: #8E7CFF;
+  --refer:  #E85088;
+  --purple: #8F83F3;
   --bg:     #F8FBFF;
   --surface:#FFFFFF;
   --border: #DDEAF5;
@@ -91,7 +92,8 @@ body { font-family: 'Sarabun', sans-serif; background: var(--page-gradient); col
 /* KPI */
 .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
 .kpi {
-  background: rgba(255,255,255,0.92); border-radius: 16px; border: 1px solid var(--border);
+  background: linear-gradient(135deg, #FFFFFF 0%, var(--kpi-tint, #FFFFFF) 100%);
+  border-radius: 16px; border: 1px solid var(--kpi-border, var(--border));
   padding: 18px 20px; position: relative; overflow: hidden;
   transition: transform .2s ease, box-shadow .2s ease;
   box-shadow: 0 10px 28px var(--shadow);
@@ -183,6 +185,7 @@ thead th {
   font-size: 12px; white-space: nowrap;
   position: sticky; top: 0; z-index: 1;
 }
+table.refer-table thead th { background: var(--table-gradient-pink); }
 thead th:first-child { text-align: left; }
 tbody tr:nth-child(even) { background: #F5FAFF; }
 tbody tr:hover { background: #EEF9F7; }
@@ -208,8 +211,8 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .badge-DR    { background: #FFE3F0; color: var(--refer); }
-.badge-photo { background: #F8BBD0; color: #B62266; }
-.badge-other { background: #F0ECFF; color: #6F62E8; }
+.badge-photo { background: #FFF3D6; color: #C8860A; }
+.badge-other { background: #F1EEFF; color: #6A5AE0; }
 
 /* Legend */
 .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; justify-content: center; }
@@ -257,7 +260,7 @@ tbody td:first-child { text-align: left; font-weight: 500; }
   display: inline-block; padding: 2px 8px; border-radius: 10px;
   font-size: 10px; font-weight: 600; margin-left: 6px;
 }
-.chip-good   { background: #D7F5EC; color: #0E7F62; }
+.chip-good   { background: #DDF8F1; color: #168A73; }
 .chip-mid    { background: #E8F5FF; color: var(--blue-2); }
 .chip-low    { background: #FFE3F0; color: var(--refer); }
 .chip-none   { background: #F5FAFF; color: var(--muted); }
@@ -295,27 +298,27 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- KPI -->
   <div class="kpi-row">
-    <div class="kpi" style="--accent:#35C99A">
+    <div class="kpi" style="--accent:#43D3AE; --kpi-tint:#E8FBF5; --kpi-border:#BCEFE0">
       <div class="kpi-label">เป้าหมาย</div>
       <div class="kpi-value" id="kpiTarget">—</div>
       <div class="kpi-sub" id="kpiTargetSub">ราย</div>
     </div>
-    <div class="kpi" style="--accent:#4D9DFF">
+    <div class="kpi" style="--accent:#4D96FF; --kpi-tint:#EAF3FF; --kpi-border:#C5DDFB">
       <div class="kpi-label">ตรวจได้แล้ว</div>
       <div class="kpi-value" id="kpiDone">—</div>
       <div class="kpi-sub kpi-pct" id="kpiCovPct" style="color:var(--blue)">—</div>
     </div>
-    <div class="kpi" style="--accent:#35C99A">
+    <div class="kpi" style="--accent:#43D3AE; --kpi-tint:#E8FBF5; --kpi-border:#BCEFE0">
       <div class="kpi-label">ไม่พบ DR (No DR)</div>
       <div class="kpi-value" id="kpiNoDR">—</div>
       <div class="kpi-sub" id="kpiNoDRPct">—</div>
     </div>
-    <div class="kpi" style="--accent:#F05A9D">
+    <div class="kpi" style="--accent:#F05A9D; --kpi-tint:#FFEDF5; --kpi-border:#FBCBDF">
       <div class="kpi-label">พบ DR</div>
       <div class="kpi-value" id="kpiDR">—</div>
       <div class="kpi-sub kpi-pct" id="kpiDRPct" style="color:var(--red)">—</div>
     </div>
-    <div class="kpi" style="--accent:#EC407A">
+    <div class="kpi" style="--accent:#E85088; --kpi-tint:#FFEAF2; --kpi-border:#FAC4D8">
       <div class="kpi-label">Refer รวมทั้งหมด</div>
       <div class="kpi-value" id="kpiRefer">—</div>
       <div class="kpi-sub" id="kpiReferSub">—</div>
@@ -334,7 +337,7 @@ body { min-width: 1280px; overflow-x: auto; }
   <!-- Row 2: 2 pie charts เรียงข้างกัน -->
   <div class="pies-row">
     <div class="card">
-      <div class="card-title"><span class="dot" style="--dot-c:#35C99A"></span>ผลการตรวจจอประสาทตา</div>
+      <div class="card-title"><span class="dot" style="--dot-c:#43D3AE"></span>ผลการตรวจจอประสาทตา</div>
       <div class="pie-inner">
         <canvas id="drPieChart" height="160"></canvas>
         <div class="legend" id="drLegend"></div>
@@ -394,7 +397,7 @@ body { min-width: 1280px; overflow-x: auto; }
       <button class="tab-btn" data-type="อื่นๆ" onclick="filterRefer('อื่นๆ',this)">อื่นๆ</button>
     </div>
     <div class="table-wrap">
-      <table>
+      <table class="refer-table">
         <thead>
           <tr>
             <th>ประเภท</th><th>อำเภอ</th><th>รพ.สต.</th><th>ชื่อ-สกุล</th>
@@ -408,7 +411,7 @@ body { min-width: 1280px; overflow-x: auto; }
 
   <!-- Detail table -->
   <div class="card" style="margin-bottom:20px">
-    <div class="card-title"><span class="dot" style="--dot-c:#35C99A"></span>รายละเอียดรายหน่วยบริการ (เฉพาะที่มีข้อมูล)</div>
+    <div class="card-title"><span class="dot" style="--dot-c:#43D3AE"></span>รายละเอียดรายหน่วยบริการ (เฉพาะที่มีข้อมูล)</div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -552,7 +555,7 @@ async function loadData() {
     console.error('โหลดข้อมูลล้มเหลว:', err);
     if (loadingEl) {
       loadingEl.innerHTML = `
-        <div style="text-align:center;color:#EC407A;padding:40px">
+        <div style="text-align:center;color:#E85088;padding:40px">
           <div style="font-size:48px;margin-bottom:12px">⚠️</div>
           <div style="font-size:16px;font-weight:600;margin-bottom:8px">โหลดข้อมูลไม่สำเร็จ</div>
           <div style="font-size:13px;color:#6B7A90;margin-bottom:16px">${err.message}</div>
@@ -678,7 +681,7 @@ function buildDRPie(data) {
   data.forEach(d => { noDR+=d.noDR; m+=d.mild; mo+=d.mod; sv+=d.sev; pd+=d.pdr; });
   const labels = ['No DR','Mild NPDR','Moderate NPDR','Severe NPDR','PDR'];
   const vals   = [noDR, m, mo, sv, pd];
-  const colors = ['#35C99A','#4D9DFF','#FFC857','#FF6FAE','#8E7CFF'];
+  const colors = ['#60D0A8','#4D96FF','#FFC857','#FF6FAE','#9898F0'];
   if (drChart) drChart.destroy();
   drChart = new Chart(document.getElementById('drPieChart'), {
     type: 'doughnut',
@@ -696,7 +699,7 @@ function buildOtherPie(data) {
   data.forEach(d => { cat+=d.cataract; pte+=d.pterygium; glau+=d.glaucoma; oth+=d.other; });
   const labels = ['ต้อกระจก','ต้อเนื้อ','ต้อหิน','อื่นๆ'];
   const vals   = [cat, pte, glau, oth];
-  const colors = ['#8F83F3','#35C99A','#FF6FAE','#4D96FF'];
+  const colors = ['#9898F0','#60D0A8','#FF6FAE','#4D96FF'];
   if (otherChart) otherChart.destroy();
   otherChart = new Chart(document.getElementById('otherPieChart'), {
     type: 'doughnut',

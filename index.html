@@ -121,15 +121,22 @@ body { font-family: 'Sarabun', sans-serif; background: var(--page-gradient); col
 }
 .pie-inner {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  max-width: 320px;
+  gap: 16px;
   margin: 0 auto;
 }
 .pie-inner canvas {
-  max-width: 240px !important;
-  max-height: 240px !important;
+  max-width: 200px !important;
+  max-height: 200px !important;
+}
+.pie-inner .legend {
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 0;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 .prog-card-full {
   display: flex;

@@ -87,6 +87,12 @@ body { font-family: 'Sarabun', sans-serif; background: var(--page-gradient); col
   box-shadow: 0 5px 16px rgba(216,230,243,0.55);
 }
 .filter-bar select:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(185,232,255,0.45); }
+.compare-link {
+  margin-left: auto; padding: 8px 14px; border-radius: 999px; background: #EAF3FF;
+  border: 1px solid #C5DDFB; color: var(--blue-2); font-size: 13px; font-weight: 600;
+  text-decoration: none;
+}
+.compare-link:hover { background: #DCEEFF; }
 .main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
 
 /* KPI */
@@ -272,6 +278,49 @@ tbody td:first-child { text-align: left; font-weight: 500; }
 .chip-low    { background: #FFE3F0; color: var(--refer); }
 .chip-none   { background: #F5FAFF; color: var(--muted); }
 
+/* Visual refresh — presentation only; no data or source interaction. */
+body {
+  background:
+    radial-gradient(circle at 4% 12%, rgba(185,232,255,.72), transparent 25%),
+    radial-gradient(circle at 96% 6%, rgba(255,214,232,.58), transparent 28%),
+    radial-gradient(circle at 78% 88%, rgba(110,231,200,.34), transparent 24%),
+    var(--page-gradient);
+  background-attachment: fixed;
+}
+.header {
+  background: linear-gradient(116deg, #FFE0EE 0%, #C7EDFF 47%, #BDF3DF 100%);
+  box-shadow: 0 18px 45px rgba(42,96,156,.18);
+}
+.header::before { background: rgba(255,255,255,.45); box-shadow: 0 0 60px rgba(255,255,255,.75); }
+.header::after { background: rgba(255,255,255,.3); box-shadow: 0 0 60px rgba(255,255,255,.55); }
+.filter-bar {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(255,255,255,.84); box-shadow: 0 10px 24px rgba(37,84,138,.08);
+}
+.filter-bar select {
+  border-color: rgba(125,176,224,.42);
+  background: linear-gradient(180deg, #FFFFFF, #F5FAFF);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.filter-bar select:hover { transform: translateY(-1px); border-color: #83B7EE; box-shadow: 0 9px 20px rgba(70,135,199,.16); }
+.compare-link {
+  color: #fff; border: 0; background: linear-gradient(105deg, #4D96FF, #8F83F3 58%, #E85088);
+  box-shadow: 0 9px 18px rgba(98,103,211,.27); transition: transform .18s ease, box-shadow .18s ease;
+}
+.compare-link:hover { background: linear-gradient(105deg, #3B85EE, #796EE9 58%, #DB3D7A); transform: translateY(-2px); box-shadow: 0 13px 24px rgba(98,103,211,.34); }
+.kpi { box-shadow: 0 14px 32px rgba(36,88,145,.12); }
+.kpi::after { content: ''; position:absolute; width:86px; height:86px; border-radius:50%; right:-34px; bottom:-43px; background:var(--accent); opacity:.10; }
+.kpi:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(36,88,145,.19); }
+.card { background: rgba(255,255,255,.88); backdrop-filter: blur(12px); box-shadow: 0 16px 38px rgba(36,88,145,.11); transition: transform .2s ease, box-shadow .2s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 21px 45px rgba(36,88,145,.16); }
+.card-title .dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot-c, var(--blue)) 18%, transparent), 0 0 14px var(--dot-c, var(--blue)); }
+.refer-stat { box-shadow: 0 10px 24px rgba(36,88,145,.08); transition: transform .18s ease, box-shadow .18s ease; }
+.refer-stat:hover { transform: translateY(-3px); box-shadow: 0 16px 28px rgba(36,88,145,.15); }
+.tab-btn:hover { transform: translateY(-1px); box-shadow: 0 7px 14px rgba(36,88,145,.13); }
+tbody tr { transition: background .14s ease, transform .14s ease; }
+tbody tr:hover { transform: scale(1.002); box-shadow: 0 4px 12px rgba(36,88,145,.08); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
 /* Mobile: keep desktop layout — บนมือถือจะ scroll ได้ + pinch zoom ดูเหมือน PC */
 body { min-width: 1280px; overflow-x: auto; }
 </style>
@@ -284,15 +333,20 @@ body { min-width: 1280px; overflow-x: auto; }
   </div>
   <div class="header-left">
     <h1>🔬 ระบบติดตามผลตรวจจอประสาทตา ผู้ป่วย DM — จังหวัดกาญจนบุรี</h1>
-    <p>ปีงบประมาณ 2569 · <span id="updateDate">อัพเดตล่าสุด: —</span></p>
+    <p><span id="activeYearLabel">ปีงบประมาณ —</span> · <span id="updateDate">อัพเดตล่าสุด: —</span></p>
   </div>
 </div>
 
 <div class="filter-bar">
   <label>กรองข้อมูล:</label>
+  <select id="filterYear" onchange="changeActiveYear()" aria-label="ปีข้อมูล"></select>
   <select id="filterDistrict" onchange="applyFilter()">
     <option value="all">ทุกอำเภอ</option>
   </select>
+  <select id="filterHealthCenter" onchange="applyFilter()">
+    <option value="all">ทุก รพ.สต.</option>
+  </select>
+  <a class="compare-link" href="comparison.html">เปรียบเทียบรายปี ↗</a>
 </div>
 
 <div class="main">
@@ -407,7 +461,7 @@ body { min-width: 1280px; overflow-x: auto; }
       <table class="refer-table">
         <thead>
           <tr>
-            <th>ประเภท</th><th>อำเภอ</th><th>รพ.สต.</th><th>ชื่อ-สกุล</th>
+            <th>ประเภท</th><th>อำเภอ</th><th>รพ.สต.</th><th>เพศ</th><th>สัญชาติ</th>
             <th>อายุ</th><th>U/D</th><th>เหตุผล Refer</th><th>วินิจฉัยจาก รพ.</th><th>หมายเหตุ</th>
           </tr>
         </thead>
@@ -508,12 +562,13 @@ function transformData(json) {
     d.other     = hcInDist.reduce((s,r) => s + r.other, 0);
   });
   
-  // ── REFER (รายชื่อ) ──
+  // ── REFER (ไม่มีชื่อ-สกุลหรือเลขบัตร) ──
   REFER = json.refers.map(r => ({
     type: r.type,
     district: r.district,
     hc: r.hc,
-    name: r.name,
+    sex: r.sex || r.gender || 'ไม่ระบุ',
+    nationality: r.nationality || 'ไม่ระบุ',
     age: r.age,
     ud: r.ud,
     reason: r.reason,
@@ -577,19 +632,22 @@ async function loadData() {
 // ══════════════════════════════════════════════════════
 let coverageChart;
 function buildProgress(data, distFilter) {
-  const isSingle = distFilter && distFilter !== 'all';
+  const isSingle = (distFilter && distFilter !== 'all') || _currentHealthCenterFilter !== 'all';
   const pendingLabelEl = document.getElementById('pendingLabel');
 
   // อัพเดต title
   document.getElementById('progCardTitle').textContent = isSingle
-    ? `ความครอบคลุมรายหน่วยบริการ — อำเภอ${distFilter}`
+    ? `ความครอบคลุมรายหน่วยบริการ — ${_currentHealthCenterFilter !== 'all' ? _currentHealthCenterFilter : `อำเภอ${distFilter}`}`
     : 'ความครอบคลุมรายอำเภอ (% ของเป้าหมาย)';
 
   let labels, percents, doneVals, targetVals, colors, pending;
 
   if (isSingle) {
     // แสดง รพ.สต. รายตัวของอำเภอนั้น
-    const hcRows = RAW.filter(r => r.district === distFilter);
+    const hcRows = RAW.filter(r =>
+      (distFilter === 'all' || r.district === distFilter) &&
+      (_currentHealthCenterFilter === 'all' || r.hc === _currentHealthCenterFilter)
+    );
     labels     = hcRows.map(r => r.hc.replace('รพ.สต.', ''));
     percents   = hcRows.map(r => r.target > 0 ? Math.round((r.done / r.target) * 100) : 0);
     doneVals   = hcRows.map(r => r.done);
@@ -724,8 +782,9 @@ function buildSummary(data) {
   const tbody = document.getElementById('summaryBody');
   
   // helper: นับ refer ของอำเภอจาก REFER array
-  const countRefer = (distName, type) => 
-    REFER.filter(r => r.district === distName && r.type === type).length;
+  const countRefer = (distName, type) =>
+    REFER.filter(r => r.district === distName && r.type === type &&
+      (_currentHealthCenterFilter === 'all' || r.hc === _currentHealthCenterFilter)).length;
   
   const totT  = data.reduce((s,d)=>s+d.target,0);
   const totD  = data.reduce((s,d)=>s+d.done,0);
@@ -735,7 +794,8 @@ function buildSummary(data) {
   
   // คำนวณ refer รวมจาก REFER array
   const distNames = data.map(d => d.name);
-  const referScope = REFER.filter(r => distNames.includes(r.district));
+  const referScope = REFER.filter(r => distNames.includes(r.district) &&
+    (_currentHealthCenterFilter === 'all' || r.hc === _currentHealthCenterFilter));
   const totRD = referScope.filter(r => r.type === 'DR').length;
   const totRP = referScope.filter(r => r.type === 'ถ่ายซ้ำ').length;
   const totRO = referScope.filter(r => r.type === 'อื่นๆ').length;
@@ -775,6 +835,7 @@ function buildDetail(distFilter) {
   const tbody = document.getElementById('detailBody');
   let rows = RAW.filter(r => r.target > 0);
   if (distFilter && distFilter !== 'all') rows = rows.filter(r => r.district === distFilter);
+  if (_currentHealthCenterFilter !== 'all') rows = rows.filter(r => r.hc === _currentHealthCenterFilter);
   tbody.innerHTML = rows.map(r => {
     const pct = r.target>0 ? ((r.done/r.target)*100).toFixed(0)+'%' : '—';
     const cls = r.target>0 && r.done/r.target < 0.5 ? 'warn-cell' : 'pct-cell';
@@ -794,6 +855,7 @@ function buildDetail(distFilter) {
 //  REFER TABLE  — กรองตามอำเภอ + ประเภท
 // ══════════════════════════════════════════════════════
 let _currentDistFilter = 'all';
+let _currentHealthCenterFilter = 'all';
 
 function filterRefer(type, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -803,11 +865,12 @@ function filterRefer(type, btn) {
   let base = _currentDistFilter === 'all'
     ? REFER
     : REFER.filter(r => r.district === _currentDistFilter);
+  if (_currentHealthCenterFilter !== 'all') base = base.filter(r => r.hc === _currentHealthCenterFilter);
   const rows = type === 'all' ? base : base.filter(r => r.type === type);
 
   const tbody = document.getElementById('referBody');
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">ไม่มีข้อมูลในหมวดนี้</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">ไม่มีข้อมูลในหมวดนี้</td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(r => {
@@ -815,20 +878,31 @@ function filterRefer(type, btn) {
     const label = r.type==='DR' ? 'Refer DR' : r.type==='ถ่ายซ้ำ' ? 'ถ่ายซ้ำ' : 'อื่นๆ';
     return `<tr>
       <td><span class="badge ${cls}">${label}</span></td>
-      <td>${r.district}</td><td style="font-size:11px">${r.hc}</td>
-      <td style="font-weight:500">${r.name}</td>
-      <td>${r.age}</td><td style="font-size:11px">${r.ud}</td>
-      <td style="font-size:12px">${r.reason}</td>
-      <td style="font-size:12px">${r.dx}</td>
-      <td style="font-size:12px">${r.note}</td>
+      <td>${escapeHtml(r.district)}</td><td style="font-size:11px">${escapeHtml(r.hc)}</td>
+      <td>${escapeHtml(r.sex)}</td><td>${escapeHtml(r.nationality)}</td>
+      <td>${escapeHtml(r.age)}</td><td style="font-size:11px">${escapeHtml(r.ud)}</td>
+      <td style="font-size:12px">${escapeHtml(r.reason)}</td>
+      <td style="font-size:12px">${escapeHtml(r.dx)}</td>
+      <td style="font-size:12px">${escapeHtml(r.note)}</td>
     </tr>`;
   }).join('');
 }
 
-function updateReferSection(dist) {
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function updateReferSection(dist, healthCenter) {
   _currentDistFilter = dist;
+  _currentHealthCenterFilter = healthCenter || 'all';
   // กรอง REFER ตามอำเภอ
-  const base = dist === 'all' ? REFER : REFER.filter(r => r.district === dist);
+  let base = dist === 'all' ? REFER : REFER.filter(r => r.district === dist);
+  if (_currentHealthCenterFilter !== 'all') base = base.filter(r => r.hc === _currentHealthCenterFilter);
 
   const nDR  = base.filter(r=>r.type==='DR').length;
   const nPh  = base.filter(r=>r.type==='ถ่ายซ้ำ').length;
@@ -895,6 +969,134 @@ function applyFilter() {
   buildSummary(data);
   buildDetail(dist);
   updateReferSection(dist);
+}
+
+// ══════════════════════════════════════════════════════
+//  YEAR / SCOPE LAYER (Phase 2) — browser-memory cache only; no Sheet writes.
+// ══════════════════════════════════════════════════════
+let ACTIVE_YEAR = null;
+let ACTIVE_YEAR_STATUS = 'not_reported';
+let AVAILABLE_YEARS = [];
+const DATA_BY_YEAR = new Map();
+
+function pickValue(row, ...keys) {
+  for (const key of keys) if (row && row[key] !== undefined && row[key] !== null) return row[key];
+  return null;
+}
+function metric(value) { const result = Number(value); return Number.isFinite(result) ? result : 0; }
+function hasPublishedMetric(rows) {
+  return rows.some(row => ['target','done','noDR','mild','mod','sev','pdr','sumDR','refDR','refPh','refOt']
+    .some(field => row[field] !== null && row[field] !== undefined));
+}
+function normalizeDashboardData(json, requestedYear) {
+  const rawSource = json.health_centers || json.hc_list || [];
+  const raw = rawSource.map(r => ({
+    district: pickValue(r, 'district') || 'ไม่ระบุ', hc: pickValue(r, 'health_center', 'hc') || 'ไม่ระบุ',
+    target: pickValue(r, 'target'), done: pickValue(r, 'examined'), noDR: pickValue(r, 'no_dr'),
+    mild: pickValue(r, 'mild_npdr'), mod: pickValue(r, 'moderate_npdr'), sev: pickValue(r, 'severe_npdr'),
+    pdr: pickValue(r, 'pdr'), sumDR: pickValue(r, 'total_dr'), refDR: pickValue(r, 'refer_dr'),
+    refPh: pickValue(r, 'refer_repeat'), refOt: pickValue(r, 'refer_other'), cataract: pickValue(r, 'cataract'),
+    pterygium: pickValue(r, 'pterygium'), glaucoma: pickValue(r, 'glaucoma'), other: pickValue(r, 'other_eye')
+  }));
+  const districts = (json.districts || []).map(d => {
+    const target = pickValue(d, 'target', 'เป้าหมาย'); const done = pickValue(d, 'examined', 'ตรวจได้'); const totalDR = pickValue(d, 'total_dr', 'รวม DR');
+    return {
+      name: pickValue(d, 'district', 'อำเภอ') || 'ไม่ระบุ', hc: metric(pickValue(d, 'health_center_count', 'จำนวน รพ.สต.')),
+      target: metric(target), done: metric(done), pct: metric(target) > 0 ? metric(done) / metric(target) : 0,
+      noDR: metric(pickValue(d, 'no_dr', 'No DR')), mild: metric(pickValue(d, 'mild_npdr', 'Mild NPDR')), mod: metric(pickValue(d, 'moderate_npdr', 'Moderate NPDR')),
+      sev: metric(pickValue(d, 'severe_npdr', 'Severe NPDR')), pdr: metric(pickValue(d, 'pdr', 'PDR')), dr: metric(totalDR),
+      drPct: metric(done) > 0 ? metric(totalDR) / metric(done) : 0, refDR: metric(pickValue(d, 'refer_dr', 'Refer DR')),
+      refPhoto: metric(pickValue(d, 'refer_repeat', 'Refer ถ่ายซ้ำ')), refOther: metric(pickValue(d, 'refer_other', 'Refer อื่นๆ')),
+      cataract: 0, pterygium: 0, glaucoma: 0, other: 0
+    };
+  });
+  districts.forEach(d => {
+    const rows = raw.filter(r => r.district === d.name);
+    ['cataract','pterygium','glaucoma','other'].forEach(field => d[field] = rows.reduce((sum, r) => sum + metric(r[field]), 0));
+  });
+  const refers = (json.refers || []).map(r => ({
+    type: r.type, district: r.district, hc: r.hc || r.health_center, sex: r.sex || r.gender || 'ไม่ระบุ', nationality: r.nationality || 'ไม่ระบุ',
+    age: r.age, ud: r.ud, reason: r.reason, dx: r.diagnosis, note: r.note
+  }));
+  return {
+    year: String(json.selected_year || requestedYear || ''), status: json.year_status || (hasPublishedMetric(raw) || refers.length ? 'reported' : 'not_reported'),
+    timestamp: json.timestamp || null, districts, raw, refers, availableYears: (json.available_years || [json.selected_year || requestedYear]).map(String).filter(Boolean)
+  };
+}
+function updateTimestamp(timestamp) {
+  const el = document.getElementById('updateDate'); if (!el || !timestamp) return;
+  const dt = new Date(timestamp); if (Number.isNaN(dt.getTime())) return;
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  el.textContent = `อัพเดตล่าสุด: ${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()+543} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')} น.`;
+}
+function populateYearOptions() {
+  const years = document.getElementById('filterYear'); years.innerHTML = '';
+  AVAILABLE_YEARS.forEach(year => years.add(new Option(`ปี ${year}`, year))); years.value = ACTIVE_YEAR;
+}
+function syncHealthCenterOptions(reset) {
+  const district = document.getElementById('filterDistrict').value; const select = document.getElementById('filterHealthCenter'); const previous = reset ? 'all' : select.value;
+  const rows = district === 'all' ? RAW : RAW.filter(r => r.district === district); select.innerHTML = '<option value="all">ทุก รพ.สต.</option>';
+  [...new Set(rows.map(r => r.hc))].sort().forEach(hc => select.add(new Option(hc, hc)));
+  if ([...select.options].some(option => option.value === previous)) select.value = previous;
+}
+function populateDistrictOptions() {
+  const select = document.getElementById('filterDistrict'); select.innerHTML = '<option value="all">ทุกอำเภอ</option>';
+  DISTRICTS.forEach(d => select.add(new Option(d.name, d.name))); syncHealthCenterOptions(true);
+}
+async function fetchYear(year) {
+  if (DATA_BY_YEAR.has(String(year))) return DATA_BY_YEAR.get(String(year));
+  const url = new URL(APPS_SCRIPT_URL); url.searchParams.set('year', year);
+  const res = await fetch(url); if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json(); if (json.error) throw new Error(json.error);
+  const data = normalizeDashboardData(json, year); DATA_BY_YEAR.set(data.year, data); return data;
+}
+function activateYear(data) {
+  ACTIVE_YEAR = data.year; ACTIVE_YEAR_STATUS = data.status; DISTRICTS = data.districts; RAW = data.raw; REFER = data.refers;
+  document.getElementById('activeYearLabel').textContent = `ปีงบประมาณ ${ACTIVE_YEAR}`;
+  updateTimestamp(data.timestamp); populateYearOptions(); populateDistrictOptions(); applyFilter();
+}
+async function changeActiveYear() {
+  const year = document.getElementById('filterYear').value; const loading = document.getElementById('loadingOverlay'); if (loading) loading.style.display = 'flex';
+  try { activateYear(await fetchYear(year)); } catch (error) { console.error(`ไม่สามารถโหลดปี ${year}:`, error); } finally { if (loading) loading.style.display = 'none'; }
+}
+function aggregateScope(rows, label) {
+  const fields = ['target','done','noDR','mild','mod','sev','pdr','sumDR','refDR','refPh','refOt','cataract','pterygium','glaucoma','other'];
+  const result = {name: label, hc: new Set(rows.map(r => r.hc)).size}; fields.forEach(field => result[field] = rows.reduce((sum, row) => sum + metric(row[field]), 0));
+  result.dr = result.sumDR; result.pct = result.target > 0 ? result.done / result.target : 0; result.drPct = result.done > 0 ? result.dr / result.done : 0; return result;
+}
+function renderNoReport() {
+  ['kpiTarget','kpiDone','kpiNoDR','kpiDR','kpiRefer'].forEach(id => document.getElementById(id).textContent = '—');
+  ['kpiTargetSub','kpiCovPct','kpiNoDRPct','kpiDRPct','kpiReferSub'].forEach(id => document.getElementById(id).textContent = 'ยังไม่มีรายงาน');
+  document.getElementById('progCardTitle').textContent = `ปีงบประมาณ ${ACTIVE_YEAR}: ยังไม่มีรายงาน`;
+  if (coverageChart) coverageChart.destroy(); if (drChart) drChart.destroy(); if (otherChart) otherChart.destroy();
+  document.getElementById('coverageChart').style.display = 'none'; document.getElementById('drPieChart').style.display = 'none'; document.getElementById('otherPieChart').style.display = 'none';
+  document.getElementById('pendingLabel').style.display = 'block'; document.getElementById('pendingLabel').textContent = 'ยังไม่มีรายงาน — ค่า “—” ไม่ใช่ 0';
+  document.getElementById('drLegend').textContent = 'ยังไม่มีรายงาน'; document.getElementById('otherLegend').textContent = 'ยังไม่มีรายงาน';
+  document.getElementById('summaryBody').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีรายงานสำหรับปีนี้</td></tr>';
+  document.getElementById('detailBody').innerHTML = '<tr><td colspan="18" style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีรายงานสำหรับปีนี้</td></tr>';
+  document.getElementById('referBody').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีรายงานสำหรับปีนี้</td></tr>';
+  ['rsValDR','rsValPhoto','rsValOther'].forEach(id => document.getElementById(id).textContent = '—');
+}
+function restoreCharts() { ['coverageChart','drPieChart','otherPieChart'].forEach(id => document.getElementById(id).style.display = ''); }
+function applyFilter() {
+  const district = document.getElementById('filterDistrict').value; syncHealthCenterOptions(false); const hc = document.getElementById('filterHealthCenter').value; _currentHealthCenterFilter = hc;
+  if (ACTIVE_YEAR_STATUS !== 'reported') { renderNoReport(); return; }
+  restoreCharts();
+  const rawRows = RAW.filter(r => (district === 'all' || r.district === district) && (hc === 'all' || r.hc === hc));
+  const data = hc === 'all' ? DISTRICTS.filter(d => district === 'all' || d.name === district) : [aggregateScope(rawRows, hc)];
+  const refs = REFER.filter(r => (district === 'all' || r.district === district) && (hc === 'all' || r.hc === hc)); const total = aggregateScope(rawRows, 'รวม'); const byType = type => refs.filter(r => r.type === type).length;
+  document.getElementById('kpiTargetSub').textContent = `ราย (${total.hc} รพ.สต.)`; document.getElementById('kpiTarget').textContent = total.target.toLocaleString(); document.getElementById('kpiDone').textContent = total.done.toLocaleString();
+  document.getElementById('kpiCovPct').textContent = total.target > 0 ? `${(total.done / total.target * 100).toFixed(1)}% ของเป้าหมาย` : '—'; document.getElementById('kpiNoDR').textContent = total.noDR.toLocaleString();
+  document.getElementById('kpiNoDRPct').textContent = total.done > 0 ? `${(total.noDR / total.done * 100).toFixed(1)}% ของที่ตรวจ` : '—'; document.getElementById('kpiDR').textContent = total.dr.toLocaleString();
+  document.getElementById('kpiDRPct').textContent = total.done > 0 ? `${(total.dr / total.done * 100).toFixed(1)}% ของที่ตรวจ` : '—'; document.getElementById('kpiRefer').textContent = refs.length.toLocaleString();
+  document.getElementById('kpiReferSub').textContent = `DR ${byType('DR')} · ถ่ายซ้ำ ${byType('ถ่ายซ้ำ')} · อื่นๆ ${byType('อื่นๆ')}`;
+  buildProgress(data, district); buildDRPie(data); buildOtherPie(data); buildSummary(data); buildDetail(district); updateReferSection(district, hc);
+}
+async function loadData() {
+  const loading = document.getElementById('loadingOverlay');
+  try { const first = await fetchYear('2569'); AVAILABLE_YEARS = [...new Set(first.availableYears)].sort(); activateYear(first); }
+  catch (error) { console.error('โหลดข้อมูลล้มเหลว:', error); if (loading) loading.innerHTML = `<div style="text-align:center;color:#E85088;padding:40px">โหลดข้อมูลไม่สำเร็จ<br><small>${escapeHtml(error.message)}</small></div>`; return; }
+  if (loading) loading.style.display = 'none';
 }
 
 // ══════════════════════════════════════════════════════

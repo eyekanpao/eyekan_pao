@@ -977,6 +977,7 @@ function applyFilter() {
 let ACTIVE_YEAR = null;
 let ACTIVE_YEAR_STATUS = 'not_reported';
 let AVAILABLE_YEARS = [];
+const FALLBACK_FISCAL_YEARS = ['2569', '2570'];
 const DATA_BY_YEAR = new Map();
 
 function pickValue(row, ...keys) {
@@ -989,6 +990,8 @@ function hasPublishedMetric(rows) {
     .some(field => row[field] !== null && row[field] !== undefined));
 }
 function normalizeDashboardData(json, requestedYear) {
+  const requested = String(requestedYear);
+  const responseYear = json.selected_year == null ? null : String(json.selected_year);
   const rawSource = json.health_centers || json.hc_list || [];
   const raw = rawSource.map(r => ({
     district: pickValue(r, 'district') || 'ไม่ระบุ', hc: pickValue(r, 'health_center', 'hc') || 'ไม่ระบุ',
@@ -1018,9 +1021,11 @@ function normalizeDashboardData(json, requestedYear) {
     type: r.type, district: r.district, hc: r.hc || r.health_center, sex: r.sex || r.gender || 'ไม่ระบุ', nationality: r.nationality || 'ไม่ระบุ',
     age: r.age, ud: r.ud, reason: r.reason, dx: r.diagnosis, note: r.note
   }));
+  const inferredStatus = json.year_status || (hasPublishedMetric(raw) || refers.length ? 'reported' : 'not_reported');
+  const mismatchedOrUnscoped = responseYear ? responseYear !== requested : requested !== '2569';
   return {
-    year: String(json.selected_year || requestedYear || ''), status: json.year_status || (hasPublishedMetric(raw) || refers.length ? 'reported' : 'not_reported'),
-    timestamp: json.timestamp || null, districts, raw, refers, availableYears: (json.available_years || [json.selected_year || requestedYear]).map(String).filter(Boolean)
+    year: requested, status: mismatchedOrUnscoped ? 'not_reported' : inferredStatus,
+    timestamp: json.timestamp || null, districts, raw, refers, availableYears: [...new Set([...(json.available_years || []), ...FALLBACK_FISCAL_YEARS].map(String))]
   };
 }
 function updateTimestamp(timestamp) {
@@ -1094,7 +1099,7 @@ function applyFilter() {
 }
 async function loadData() {
   const loading = document.getElementById('loadingOverlay');
-  try { const first = await fetchYear('2569'); AVAILABLE_YEARS = [...new Set(first.availableYears)].sort(); activateYear(first); }
+  try { const first = await fetchYear('2569'); AVAILABLE_YEARS = [...new Set([...first.availableYears, ...FALLBACK_FISCAL_YEARS])].sort(); activateYear(first); }
   catch (error) { console.error('โหลดข้อมูลล้มเหลว:', error); if (loading) loading.innerHTML = `<div style="text-align:center;color:#E85088;padding:40px">โหลดข้อมูลไม่สำเร็จ<br><small>${escapeHtml(error.message)}</small></div>`; return; }
   if (loading) loading.style.display = 'none';
 }

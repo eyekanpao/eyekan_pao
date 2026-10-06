@@ -496,6 +496,8 @@ body { min-width: 1280px; overflow-x: auto; }
 //  DATA — ดึงจาก Google Sheets ผ่าน Apps Script
 // ══════════════════════════════════════════════════════
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxv819BlEPfzI4s6xa6A0tl8hM0fuyR4QGugY1xs6zb6g9bheLX33F5J69ybjjrRyzxLw/exec';
+const API_FETCH_ATTEMPTS = 3;
+const API_FETCH_TIMEOUT_MS = 12000;
 
 // ตัวแปรเก็บข้อมูล (จะถูกเติมหลัง fetch สำเร็จ)
 let DISTRICTS = [];
@@ -1050,10 +1052,21 @@ function populateDistrictOptions() {
 }
 async function fetchYear(year) {
   if (DATA_BY_YEAR.has(String(year))) return DATA_BY_YEAR.get(String(year));
-  const url = new URL(APPS_SCRIPT_URL); url.searchParams.set('year', year);
-  const res = await fetch(url); if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json(); if (json.error) throw new Error(json.error);
-  const data = normalizeDashboardData(json, year); DATA_BY_YEAR.set(data.year, data); return data;
+  let lastError = null;
+  for (let attempt = 1; attempt <= API_FETCH_ATTEMPTS; attempt += 1) {
+    const url = new URL(APPS_SCRIPT_URL); url.searchParams.set('year', year); url.searchParams.set('_cb', `${Date.now()}-${attempt}`);
+    const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {cache: 'no-store', signal: controller.signal}); if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json(); if (json.error) throw new Error(json.error);
+      const data = normalizeDashboardData(json, year); DATA_BY_YEAR.set(data.year, data); return data;
+    } catch (error) {
+      lastError = error;
+      if (attempt < API_FETCH_ATTEMPTS) await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+    } finally { clearTimeout(timeout); }
+  }
+  const detail = lastError && lastError.name === 'AbortError' ? 'หมดเวลารอข้อมูล' : (lastError?.message || 'ไม่ทราบสาเหตุ');
+  throw new Error(`เชื่อมต่อแหล่งข้อมูลไม่สำเร็จหลังลอง ${API_FETCH_ATTEMPTS} ครั้ง (${detail})`);
 }
 function activateYear(data) {
   ACTIVE_YEAR = data.year; ACTIVE_YEAR_STATUS = data.status; DISTRICTS = data.districts; RAW = data.raw; REFER = data.refers;
@@ -1081,6 +1094,9 @@ function renderNoReport() {
   document.getElementById('detailBody').innerHTML = '<tr><td colspan="18" style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีรายงานสำหรับปีนี้</td></tr>';
   document.getElementById('referBody').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">ยังไม่มีรายงานสำหรับปีนี้</td></tr>';
   ['rsValDR','rsValPhoto','rsValOther'].forEach(id => document.getElementById(id).textContent = '—');
+  const tabs = document.querySelectorAll('.tab-btn');
+  ['ทั้งหมด (—)', 'Refer DR (—)', 'ถ่ายซ้ำ (—)', 'อื่นๆ (—)'].forEach((label, index) => { if (tabs[index]) tabs[index].textContent = label; });
+  tabs.forEach(tab => tab.classList.remove('active')); if (tabs[0]) tabs[0].classList.add('active');
 }
 function restoreCharts() { ['coverageChart','drPieChart','otherPieChart'].forEach(id => document.getElementById(id).style.display = ''); }
 function applyFilter() {
@@ -1100,7 +1116,7 @@ function applyFilter() {
 async function loadData() {
   const loading = document.getElementById('loadingOverlay');
   try { const first = await fetchYear('2569'); AVAILABLE_YEARS = [...new Set([...first.availableYears, ...FALLBACK_FISCAL_YEARS])].sort(); activateYear(first); }
-  catch (error) { console.error('โหลดข้อมูลล้มเหลว:', error); if (loading) loading.innerHTML = `<div style="text-align:center;color:#E85088;padding:40px">โหลดข้อมูลไม่สำเร็จ<br><small>${escapeHtml(error.message)}</small></div>`; return; }
+  catch (error) { console.error('โหลดข้อมูลล้มเหลว:', error); if (loading) loading.innerHTML = `<div style="text-align:center;color:#E85088;padding:40px"><div style="font-size:16px;font-weight:600;margin-bottom:8px">โหลดข้อมูลไม่สำเร็จ</div><small>${escapeHtml(error.message)}</small><br><button onclick="location.reload()" style="margin-top:16px;padding:8px 20px;background:#4D96FF;color:#fff;border:0;border-radius:8px;cursor:pointer;font-family:Sarabun">ลองใหม่</button></div>`; return; }
   if (loading) loading.style.display = 'none';
 }
 

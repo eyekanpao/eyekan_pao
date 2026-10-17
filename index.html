@@ -499,6 +499,20 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxv819BlEPfzI4s
 const API_FETCH_ATTEMPTS = 3;
 const API_FETCH_TIMEOUT_MS = 12000;
 
+function requestJsonp(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `__eyekanJsonp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const script = document.createElement('script');
+    const cleanup = () => { clearTimeout(timer); script.remove(); try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; } };
+    const timer = setTimeout(() => { cleanup(); reject(new Error('หมดเวลารอข้อมูล')); }, timeoutMs);
+    window[callbackName] = data => { cleanup(); resolve(data); };
+    url.searchParams.set('callback', callbackName);
+    script.async = true; script.src = url.toString();
+    script.onerror = () => { cleanup(); reject(new Error('โหลด API ไม่สำเร็จ')); };
+    document.head.appendChild(script);
+  });
+}
+
 // ตัวแปรเก็บข้อมูล (จะถูกเติมหลัง fetch สำเร็จ)
 let DISTRICTS = [];
 let RAW = [];
@@ -1055,17 +1069,15 @@ async function fetchYear(year) {
   let lastError = null;
   for (let attempt = 1; attempt <= API_FETCH_ATTEMPTS; attempt += 1) {
     const url = new URL(APPS_SCRIPT_URL); url.searchParams.set('year', year); url.searchParams.set('_cb', `${Date.now()}-${attempt}`);
-    const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), API_FETCH_TIMEOUT_MS);
     try {
-      const res = await fetch(url, {cache: 'no-store', signal: controller.signal}); if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json(); if (json.error) throw new Error(json.error);
+      const json = await requestJsonp(url, API_FETCH_TIMEOUT_MS); if (json.error) throw new Error(json.error);
       const data = normalizeDashboardData(json, year); DATA_BY_YEAR.set(data.year, data); return data;
     } catch (error) {
       lastError = error;
       if (attempt < API_FETCH_ATTEMPTS) await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-    } finally { clearTimeout(timeout); }
+    }
   }
-  const detail = lastError && lastError.name === 'AbortError' ? 'หมดเวลารอข้อมูล' : (lastError?.message || 'ไม่ทราบสาเหตุ');
+  const detail = lastError?.message || 'ไม่ทราบสาเหตุ';
   throw new Error(`เชื่อมต่อแหล่งข้อมูลไม่สำเร็จหลังลอง ${API_FETCH_ATTEMPTS} ครั้ง (${detail})`);
 }
 function activateYear(data) {
